@@ -1,11 +1,12 @@
 package com.mouts.order.service;
 
-import com.mouts.order.dto.OrderDTO;
+import com.mouts.order.record.OrderRecord;
 import com.mouts.order.entity.Order;
 import com.mouts.order.enums.OrderEvent;
 import com.mouts.order.enums.OrderStatus;
 import com.mouts.order.exception.DuplicateOrderException;
 import com.mouts.order.exception.OrderValidationException;
+import com.mouts.order.messaging.KafkaOrderProducer;
 import com.mouts.order.repository.OrderRepository;
 import com.mouts.order.util.OrderUtil;
 import jakarta.transaction.Transactional;
@@ -24,11 +25,13 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderStateMachineService stateMachineService;
     private final OrderUtil orderUtil;
+    private final KafkaOrderProducer kafkaOrderProducer;
 
-    public OrderService(OrderRepository orderRepository, OrderStateMachineService stateMachineService, OrderUtil orderUtil) {
+    public OrderService(OrderRepository orderRepository, OrderStateMachineService stateMachineService, OrderUtil orderUtil, KafkaOrderProducer kafkaOrderProducer) {
         this.orderRepository = orderRepository;
         this.stateMachineService = stateMachineService;
         this.orderUtil = orderUtil;
+        this.kafkaOrderProducer = kafkaOrderProducer;
     }
 
     @Transactional
@@ -70,9 +73,14 @@ public class OrderService {
         order.getProducts().forEach(orderProduct -> orderProduct.setOrder(order));
     }
 
-    public List<OrderDTO> getAllOrdersAsDTO() {
+    public List<OrderRecord> getAllOrdersAsRecords() {
+        log.info("tempo cache");
         return orderRepository.findAll().stream()
-                .map(orderUtil::toOrderDTO)
+                .map(orderUtil::toOrderRecord)
                 .collect(Collectors.toList());
+    }
+
+    public void newOrder(String message){
+        kafkaOrderProducer.sendToPendingOrders(message);
     }
 }

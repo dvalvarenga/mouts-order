@@ -2,7 +2,7 @@ package com.mouts.order.messaging;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mouts.order.dto.OrderDTO;
+import com.mouts.order.record.OrderRecord;
 import com.mouts.order.entity.Order;
 import com.mouts.order.enums.OrderStatus;
 import com.mouts.order.util.OrderUtil;
@@ -31,9 +31,8 @@ public class KafkaProcessedOrderProducer {
 
     public void sendProcessedOrder(Order order) {
         try {
-            OrderDTO orderDTO =  orderUtil.toOrderDTO(order);
-            orderDTO.setStatus(String.valueOf(OrderStatus.PROCESSED));
-            String message = objectMapper.writeValueAsString(orderDTO);
+            OrderRecord orderRecord = orderUtil.toOrderRecord(order,OrderStatus.PROCESSED);
+            String message = objectMapper.writeValueAsString(orderRecord);
             kafkaTemplate.send(processedOrdersTopic, message);
             log.info("Pedido processado enviado para a fila {} .", processedOrdersTopic);
         } catch (JsonProcessingException e) {

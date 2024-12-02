@@ -1,7 +1,8 @@
 package com.mouts.order.util;
 
-import com.mouts.order.dto.OrderDTO;
-import com.mouts.order.dto.OrderProductDTO;
+import com.mouts.order.enums.OrderStatus;
+import com.mouts.order.record.OrderRecord;
+import com.mouts.order.record.OrderProductRecord;
 import com.mouts.order.entity.Order;
 import org.springframework.stereotype.Component;
 
@@ -13,11 +14,11 @@ import java.util.stream.Collectors;
 @Component
 public class OrderUtil {
 
-    public OrderDTO toOrderDTO(Order order) {
-        // Mapear os produtos do pedido para OrderProductDTO
-        List<OrderProductDTO> productDTOs = order.getProducts().stream()
+    public OrderRecord toOrderRecord(Order order) {
+
+        List<OrderProductRecord> productRecords = order.getProducts().stream()
                 .map(orderProduct -> {
-                    return new OrderProductDTO(
+                    return new OrderProductRecord(
                             orderProduct.getProduct().getId(),
                             orderProduct.getProduct().getName(),
                             orderProduct.getProduct().getPrice(),
@@ -26,12 +27,34 @@ public class OrderUtil {
                     );
                 }).collect(Collectors.toList());
 
-        // Retornar o DTO do pedido com os produtos mapeados
-        return new OrderDTO(
-                order.getId(), // ID do pedido
-                order.getTotalAmount(), // Valor total do pedido
-                order.getStatus().name(), // Status do pedido
-                productDTOs // Lista de produtos
+
+        return new OrderRecord(
+                order.getId(),
+                order.getTotalAmount(),
+                order.getStatus().name(),
+                productRecords
+        );
+    }
+
+    public OrderRecord toOrderRecord(Order order,OrderStatus orderStatus) {
+
+        List<OrderProductRecord> productRecords = order.getProducts().stream()
+                .map(orderProduct -> {
+                    return new OrderProductRecord(
+                            orderProduct.getProduct().getId(),
+                            orderProduct.getProduct().getName(),
+                            orderProduct.getProduct().getPrice(),
+                            orderProduct.getUnitPrice(),
+                            orderProduct.getQuantity()
+                    );
+                }).collect(Collectors.toList());
+
+
+        return new OrderRecord(
+                order.getId(),
+                order.getTotalAmount(),
+                orderStatus.name(),
+                productRecords
         );
     }
 
@@ -62,5 +85,14 @@ public class OrderUtil {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("Erro ao gerar hash do pedido: " + e.getMessage(), e);
         }
+    }
+
+    public OrderRecord changerOrderRecordStatus(OrderRecord orderRecord, OrderStatus status){
+        return  new OrderRecord(
+                orderRecord.orderId(),
+                orderRecord.totalAmount(),
+                status.name(),
+                orderRecord.products()
+        );
     }
 }
