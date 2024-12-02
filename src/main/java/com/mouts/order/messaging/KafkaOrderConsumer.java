@@ -26,8 +26,9 @@ public class KafkaOrderConsumer {
             ObjectMapper mapper = new ObjectMapper();
             Order order = mapper.readValue(message, Order.class);
             orderService.validateOrder(order);
+            log.info("Pedido finalizado com sucesso !");
         } catch (Exception e) {
-            System.err.println("Erro ao processar a mensagem: " + e.getMessage());
+            log.error("Erro ao processar a mensagem: {}", e.getMessage());
             orderRetryProducer.sendToRetryQueue(message);
         }
     }

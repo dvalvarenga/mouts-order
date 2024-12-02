@@ -4,12 +4,14 @@ import com.mouts.order.entity.Order;
 import com.mouts.order.enums.OrderEvent;
 import com.mouts.order.enums.OrderStatus;
 import com.mouts.order.messaging.KafkaProcessedOrderProducer;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.statemachine.StateMachine;
 import org.springframework.statemachine.config.StateMachineFactory;
 import org.springframework.statemachine.support.DefaultStateMachineContext;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class OrderStateMachineService {
 
@@ -33,6 +35,7 @@ public class OrderStateMachineService {
         stateMachine.sendEvent(event);
 
         if (stateMachine.getState().getId() == OrderStatus.VALIDATED) {
+            log.info("Evento de validação identificado. Enviando pedido para processamento.");
             kafkaProcessedOrderProducer.sendProcessedOrder(order);
         }
     }
