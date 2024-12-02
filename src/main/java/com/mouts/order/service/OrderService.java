@@ -40,11 +40,11 @@ public class OrderService {
         order.setTotalAmount(totalValue);
 
         try {
-            stateMachineService.changeOrderStatus(order.getStatus(), OrderEvent.VALIDATE);
             order.setOrderCode(orderUtil.generateOrderHash(order));
             order.getProducts().forEach(orderProduct -> orderProduct.setOrder(order));
             order.setStatus(OrderStatus.VALIDATED);
             orderRepository.save(order);
+            stateMachineService.changeOrderStatus(order.getStatus(), OrderEvent.VALIDATE, order);
             System.out.println("Pedido validado com sucesso!");
          } catch (DataIntegrityViolationException e) {
             System.out.println("Pedido duplicado.");
