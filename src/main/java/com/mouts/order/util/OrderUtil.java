@@ -22,7 +22,6 @@ public class OrderUtil {
                 .map(orderProduct -> {
                     return new OrderProductRecord(
                             orderProduct.getProduct().getId(),
-                            orderProduct.getProduct().getName(),
                             orderProduct.getProduct().getPrice(),
                             orderProduct.getUnitPrice(),
                             orderProduct.getQuantity()
@@ -44,7 +43,6 @@ public class OrderUtil {
                 .map(orderProduct -> {
                     return new OrderProductRecord(
                             orderProduct.getProduct().getId(),
-                            orderProduct.getProduct().getName(),
                             orderProduct.getProduct().getPrice(),
                             orderProduct.getUnitPrice(),
                             orderProduct.getQuantity()

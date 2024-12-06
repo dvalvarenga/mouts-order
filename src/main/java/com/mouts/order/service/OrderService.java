@@ -57,13 +57,21 @@ public class OrderService {
             stateMachineService.changeOrderStatus(order.getStatus(), OrderEvent.VALIDATE, order);
         } catch (DataIntegrityViolationException e) {
             throw new DuplicateOrderException(order.getOrderCode());
-        } catch (Exception e) {
-            throw new OrderValidationException("Erro ao validar o pedido.", e);
         }
     }
 
     private BigDecimal calculateTotalAmount(Order order) {
         return order.getProducts().stream()
+                .peek(orderProduct -> {
+                    BigDecimal unitPrice = orderProduct.getUnitPrice();
+                    BigDecimal productPrice = orderProduct.getProduct().getPrice();
+                    if (unitPrice.compareTo(productPrice) > 0) {
+                        throw new OrderValidationException(
+                                "O preço do produto no pedido (%s) não pode ser maior que o preço cadastrado (%s) para o produto ID %d."
+                                        .formatted(unitPrice, productPrice, orderProduct.getProduct().getId())
+                        );
+                    }
+                })
                 .map(orderProduct -> orderProduct.getUnitPrice()
                         .multiply(BigDecimal.valueOf(orderProduct.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);

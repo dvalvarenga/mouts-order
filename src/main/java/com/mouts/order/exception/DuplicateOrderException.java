@@ -1,10 +1,11 @@
 package com.mouts.order.exception;
 
-import org.springframework.http.HttpStatus;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class DuplicateOrderException extends RuntimeException {
 
     public DuplicateOrderException(String orderCode) {
-        super("Pedido em duplicidade. Código do pedido: " + orderCode + ". Pedido não será enviado para reprocessamento.");
+        log.warn("Pedido em duplicidade. Código do pedido: " + orderCode + ". Pedido não será enviado para reprocessamento.");
     }
 }

@@ -3,7 +3,7 @@ package com.mouts.order.service;
 import com.mouts.order.entity.Order;
 import com.mouts.order.enums.OrderEvent;
 import com.mouts.order.enums.OrderStatus;
-import com.mouts.order.messaging.KafkaProcessedOrderProducer;
+import com.mouts.order.messaging.KafkaValidatedOrderProducer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.statemachine.StateMachine;
@@ -16,12 +16,12 @@ import org.springframework.stereotype.Service;
 public class OrderStateMachineService {
 
     private final StateMachineFactory<OrderStatus, OrderEvent> stateMachineFactory;
-    private final KafkaProcessedOrderProducer kafkaProcessedOrderProducer;
+    private final KafkaValidatedOrderProducer kafkaValidatedOrderProducer;
 
     @Autowired
-    public OrderStateMachineService(StateMachineFactory<OrderStatus, OrderEvent> stateMachineFactory, KafkaProcessedOrderProducer kafkaProcessedOrderProducer) {
+    public OrderStateMachineService(StateMachineFactory<OrderStatus, OrderEvent> stateMachineFactory, KafkaValidatedOrderProducer kafkaValidatedOrderProducer) {
         this.stateMachineFactory = stateMachineFactory;
-        this.kafkaProcessedOrderProducer = kafkaProcessedOrderProducer;
+        this.kafkaValidatedOrderProducer = kafkaValidatedOrderProducer;
     }
 
     public void changeOrderStatus(OrderStatus currentStatus, OrderEvent event, Order order) {
@@ -44,7 +44,7 @@ public class OrderStateMachineService {
 
         if (stateMachine.getState().getId() == OrderStatus.VALIDATED) {
             log.info("[SSM] - Evento de validação identificado. Enviando pedido para processamento.");
-            kafkaProcessedOrderProducer.sendProcessedOrder(order);
+            kafkaValidatedOrderProducer.sendValidatedOrder(order);
         }
     }
 }

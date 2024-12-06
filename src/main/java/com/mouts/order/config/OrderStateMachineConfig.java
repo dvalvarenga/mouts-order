@@ -25,9 +25,7 @@ public class OrderStateMachineConfig extends StateMachineConfigurerAdapter<Order
     @Override
     public void configure(StateMachineTransitionConfigurer<OrderStatus, OrderEvent> transitions) throws Exception {
         transitions
-                .withExternal().source(OrderStatus.PENDING).target(OrderStatus.VALIDATED).event(OrderEvent.VALIDATE)
-                .and()
-                .withExternal().source(OrderStatus.VALIDATED).target(OrderStatus.PROCESSED).event(OrderEvent.PROCESS);
+                .withExternal().source(OrderStatus.PENDING).target(OrderStatus.VALIDATED).event(OrderEvent.VALIDATE);
 
     }
 }

@@ -6,17 +6,15 @@ import java.math.RoundingMode;
 
 public record OrderProductRecord(
         Long productId,
-        String productName,
         BigDecimal productPrice,
         BigDecimal orderProductPrice,
         Integer quantity,
         BigDecimal discountPercentage
 ) implements Serializable {
 
-    public OrderProductRecord(Long productId, String productName, BigDecimal productPrice, BigDecimal orderProductPrice, Integer quantity) {
+    public OrderProductRecord(Long productId, BigDecimal productPrice, BigDecimal orderProductPrice, Integer quantity) {
         this(
                 productId,
-                productName,
                 productPrice,
                 orderProductPrice,
                 quantity,
@@ -25,11 +23,8 @@ public record OrderProductRecord(
     }
 
     private static BigDecimal calculateDiscountPercentage(BigDecimal productPrice, BigDecimal orderProductPrice) {
-        return switch (productPrice.compareTo(orderProductPrice)) {
-            case 0 -> BigDecimal.ZERO;
-            default -> productPrice.subtract(orderProductPrice)
+        return productPrice.subtract(orderProductPrice)
                     .divide(productPrice, 2, RoundingMode.HALF_UP)
                     .multiply(BigDecimal.valueOf(100));
-        };
     }
 }
