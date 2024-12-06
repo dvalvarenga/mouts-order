@@ -1,10 +1,11 @@
 package com.mouts.order.controller;
 
+import com.mouts.order.exception.DuplicateOrderException;
 import com.mouts.order.record.OrderRecord;
 import com.mouts.order.service.OrderCacheService;
 import com.mouts.order.service.OrderService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,16 +25,18 @@ public class OrderController {
 
     @GetMapping("/all")
     public List<OrderRecord> getAllOrders() {
-        log.info("tempo");
-        return orderCacheService.getAllOrders();
+        long startTime = System.currentTimeMillis();
+        List<OrderRecord> orders = orderCacheService.getAllOrders();
+        long endTime = System.currentTimeMillis();
+        System.out.println("Tempo de execução: " + (endTime - startTime) + " ms");
+        return orders;
     }
 
 
-    // endpoint somente para fins de apresentação.
     @PostMapping("/send")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public void sendOrderToKafka(@RequestBody String message) {
+    public ResponseEntity<String> sendOrderToKafka(@RequestBody String message) {
         orderService.newOrder(message);
+        return ResponseEntity.ok("Pedido enviado com sucesso !");
     }
 
  }

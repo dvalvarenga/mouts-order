@@ -28,14 +28,22 @@ public class OrderStateMachineService {
         StateMachine<OrderStatus, OrderEvent> stateMachine = stateMachineFactory.getStateMachine();
         stateMachine.start();
 
+        log.info("[SSM] - Estado inicial da máquina de estados: {}", stateMachine.getState().getId());
+
         stateMachine.getStateMachineAccessor().doWithAllRegions(accessor ->
                 accessor.resetStateMachine(new DefaultStateMachineContext<>(currentStatus, null, null, null))
         );
 
-        stateMachine.sendEvent(event);
+        if (stateMachine.sendEvent(event)) {
+            log.info("[SSM] - Transição de estado realizada com sucesso.");
+        } else {
+            log.warn("[SSM] - Nenhum evento cadastrado para o estado recebido.");
+        }
+
+        log.info("[SSM] - Estado atualizado. Estado atual após transição: {}", stateMachine.getState().getId());
 
         if (stateMachine.getState().getId() == OrderStatus.VALIDATED) {
-            log.info("Evento de validação identificado. Enviando pedido para processamento.");
+            log.info("[SSM] - Evento de validação identificado. Enviando pedido para processamento.");
             kafkaProcessedOrderProducer.sendProcessedOrder(order);
         }
     }

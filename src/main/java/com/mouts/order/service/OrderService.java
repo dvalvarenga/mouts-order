@@ -11,6 +11,7 @@ import com.mouts.order.repository.OrderRepository;
 import com.mouts.order.util.OrderUtil;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
@@ -35,10 +36,12 @@ public class OrderService {
     }
 
     @Transactional
+    @CacheEvict(value = "orders", allEntries = true)
     public void validateOrder(Order order) {
         log.info("Novo pedido recebido para cálculo e validação.");
 
         try {
+
             BigDecimal totalValue = calculateTotalAmount(order);
             order.setTotalAmount(totalValue);
 
@@ -49,15 +52,12 @@ public class OrderService {
 
             order.setStatus(OrderStatus.VALIDATED);
             orderRepository.save(order);
-
-            log.info("Pedido {} gerado com sucesso. Valor total do pedido: {}. Código de validação {}.", order.getId(), order.getTotalAmount(),order.getOrderCode());
+            log.info("Pedido {} gerado com sucesso. Valor total do pedido: {}. Código de validação {}.", order.getId(), order.getTotalAmount(), order.getOrderCode());
 
             stateMachineService.changeOrderStatus(order.getStatus(), OrderEvent.VALIDATE, order);
         } catch (DataIntegrityViolationException e) {
-            log.error("Erro ao validar pedido: duplicado. ID: {} ", order.getOrderCode(), e);
-            throw new DuplicateOrderException("Pedido duplicado: " + order.getOrderCode(), e);
+            throw new DuplicateOrderException(order.getOrderCode());
         } catch (Exception e) {
-            log.error("Erro de validação do pedido {} .", order.getOrderCode(), e);
             throw new OrderValidationException("Erro ao validar o pedido.", e);
         }
     }
@@ -74,7 +74,7 @@ public class OrderService {
     }
 
     public List<OrderRecord> getAllOrdersAsRecords() {
-        log.info("tempo cache");
+       log.info("Dados retornados da base de dados.");
         return orderRepository.findAll().stream()
                 .map(orderUtil::toOrderRecord)
                 .collect(Collectors.toList());
@@ -83,4 +83,5 @@ public class OrderService {
     public void newOrder(String message){
         kafkaOrderProducer.sendToPendingOrders(message);
     }
+
 }

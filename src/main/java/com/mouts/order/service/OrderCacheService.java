@@ -14,9 +14,9 @@ public class OrderCacheService {
     @Autowired
     private OrderService orderService;
 
-    @Cacheable(value = "orders", keyGenerator = "simpleKeyGenerator")
+    @Cacheable(value = "orders", key="'allOrders'" ,cacheManager = "cacheManager")
     public List<OrderRecord> getAllOrders() {
-        log.info("tempo cache");
+        log.info("Salvando no cache pela primeira vez...");
         return orderService.getAllOrdersAsRecords();
     }
 }

@@ -4,6 +4,7 @@ import com.mouts.order.enums.OrderStatus;
 import com.mouts.order.record.OrderRecord;
 import com.mouts.order.record.OrderProductRecord;
 import com.mouts.order.entity.Order;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.security.MessageDigest;
@@ -11,6 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class OrderUtil {
 
@@ -59,6 +61,7 @@ public class OrderUtil {
     }
 
     public String generateOrderHash(Order order) {
+        log.info("Gerando código do pedido");
         try {
             String dataToHash = order.getProducts().stream()
                     .map(orderProduct -> orderProduct.getProduct().getId() + "-" +
